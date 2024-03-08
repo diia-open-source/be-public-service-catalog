@@ -1,0 +1,221 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "contextMenu.proto";
+import "publicServiceCode.proto";
+import "category/publicServiceCodes.proto";
+import "profileFeature.proto";
+import "session/sessionType.proto";
+import "version.proto";
+
+package ua.gov.diia.publicservicecatalog;
+option java_multiple_files = true;
+option java_package = "ua.gov.diia.publicservicecatalog";
+
+service PublicServiceCatalog {
+    rpc createPublicService(PublicService) returns (PublicService) {
+        option (google.api.http) = {
+            post: "/api/v1/public-service"
+        };
+    }
+    rpc createPublicServiceCategory(PublicServiceCategory) returns (PublicServiceCategory) {
+        option (google.api.http) = {
+            post: "/api/v1/public-service-category"
+        };
+    }
+    rpc getPublicServiceByCode(GetPublicServiceByCodeRequest) returns (ua.gov.diia.types.contextmenu.PublicServiceSettings) {
+        option (google.api.http) = {
+            get: "/api/v1/public-services/{code}"
+        };
+    }
+    rpc getPublicServiceCategoriesList(GetPublicServiceCategoriesListRequest) returns (GetPublicServiceCategoriesListResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/public-service-categories"
+        };
+    }
+    rpc getPublicServiceCategoryByCategory(GetPublicServiceCategoryByCategoryRequest) returns (PublicServiceCategoryResult) {
+        option (google.api.http) = {
+            get: "/api/v1/public-service-categories/{category}"
+        };
+    }
+    rpc getPublicServiceContextMenu(GetPublicServiceContextMenuRequest) returns (GetPublicServiceContextMenuResponse);
+    rpc getPublicServiceSettings(PublicServiceSettingsRequest) returns (ua.gov.diia.types.contextmenu.PublicServiceSettings);
+    rpc getPublicServices(google.protobuf.Empty) returns (GetPublicServicesResponse) {
+        option (google.api.http) = {
+            get: "/api/v3/public-service/catalog"
+            additional_bindings {
+                get: "/e-resident/api/v3/public-service/catalog"
+            }
+        };
+    }
+    rpc getPublicServicesList(GetPublicServicesListRequest) returns (GetPublicServicesListResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/public-services"
+        };
+    }
+    rpc isPublicServiceAvailableByCode(IsPublicServiceAvailableRequest) returns (IsPublicServiceAvailableResponse);
+    rpc updatePublicService(UpdatePublicServiceRequest) returns (PublicService) {
+        option (google.api.http) = {
+            put: "/api/v1/public-service"
+        };
+    }
+    rpc updatePublicServiceCategory(UpdatePublicServiceCategoryRequest) returns (PublicServiceCategory) {
+        option (google.api.http) = {
+            put: "/api/v1/public-service-category"
+        };
+    }
+}
+
+message GetPublicServiceCategoryByCategoryRequest {
+    ua.gov.diia.types.category.PublicServiceCategoryCode category = 1;
+}
+
+message GetPublicServiceCategoriesListRequest {
+    optional int32 skip = 1;
+    optional int32 limit = 2;
+}
+
+message GetPublicServiceCategoriesListResponse {
+    int32 total = 1;
+    repeated PublicServiceCategoryResult publicServiceCategories = 2;
+}
+
+message GetPublicServiceByCodeRequest {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+}
+
+message GetPublicServiceContextMenuRequest  {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+}
+
+message GetPublicServiceContextMenuResponse  {
+    repeated ua.gov.diia.types.contextmenu.PublicServiceContextMenu contextMenu = 1;
+}
+
+message PublicServiceSettingsRequest {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+}
+
+message GetPublicServicesResponse {
+    repeated PublicServiceCategoryResponse publicServicesCategories = 1;
+    repeated PublicServiceTab tabs = 2;
+}
+
+message GetPublicServicesListRequest {
+    optional int32 skip = 1;
+    optional int32 limit = 2;
+}
+
+message GetPublicServicesListResponse {
+    int32 total = 1;
+    repeated ua.gov.diia.types.contextmenu.PublicServiceSettings publicServices = 2;
+}
+
+message IsPublicServiceAvailableRequest {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+    ua.gov.diia.types.session.SessionType sessionType = 2;
+    optional UserFeatures features = 3;
+}
+
+message UserFeatures {
+    optional ua.gov.diia.types.profilefeatures.DiiaOfficeProfileData office = 1;
+}
+
+message IsPublicServiceAvailableResponse {
+    bool isAvailable = 1;
+}
+
+message UpdatePublicServiceRequest {
+    string code = 1; // ua.gov.diia.types.PublicServiceCode
+    optional string name = 2;
+    optional int32 sortOrder = 3;
+    optional ua.gov.diia.types.PublicServiceStatus status = 4;
+    optional ua.gov.diia.types.appversion.PublicServiceAppVersionsBySession appVersions = 5;
+    optional ua.gov.diia.types.appversion.SingleVersionRecord platformMinVersion = 6;
+    optional ua.gov.diia.types.profilefeatures.ProfileFeature profileFeature = 7;
+    repeated string segments = 8;
+    repeated ua.gov.diia.types.category.PublicServiceCategoryCode categories = 9;
+    repeated ua.gov.diia.types.contextmenu.PublicServiceContextMenu contextMenu = 10;
+    repeated ua.gov.diia.types.session.SessionType sessionTypes = 11;
+    map<string, string> locales = 12;
+}
+
+message UpdatePublicServiceCategoryRequest {
+    string category = 1; // ua.gov.diia.types.category.PublicServiceCategoryCode
+    optional string name = 2;
+    optional string icon = 3;
+    optional int32 sortOrder = 4;
+    optional PublicServiceCategoryStatus status = 5;
+    repeated ua.gov.diia.types.PublicServiceTabCode tabCodes = 6;
+    map<string, string> locales = 7;
+}
+
+message PublicServiceTab {
+    string name = 1;
+    ua.gov.diia.types.PublicServiceTabCode code = 2;
+}
+
+message PublicServiceCategoryResponse {
+    ua.gov.diia.types.category.PublicServiceCategoryCode code = 1;
+    string icon = 2;
+    string name = 3;
+    PublicServiceCategoryStatus status = 4;
+    bool visibleSearch = 5;
+    int32 sortOrder = 6;
+    repeated PublicServiceResponse publicServices = 7;
+    ua.gov.diia.types.PublicServiceTabCode tabCode = 8;
+    repeated ua.gov.diia.types.PublicServiceTabCode tabCodes = 9;
+}
+
+enum PublicServiceCategoryStatus {
+    active = 0;
+    inactive = 1;
+}
+
+message PublicServiceResponse {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+    string name = 2;
+    ua.gov.diia.types.PublicServiceStatus status = 3;
+    int32 sortOrder = 4;
+    string search = 5;
+    repeated ua.gov.diia.types.contextmenu.PublicServiceContextMenu contextMenu = 6;
+}
+
+message PublicService {
+    ua.gov.diia.types.PublicServiceCode code = 1;
+    string name = 2;
+    int32 sortOrder = 3;
+    ua.gov.diia.types.PublicServiceStatus status = 4;
+    map<string, string> locales = 5;
+    repeated ua.gov.diia.types.category.PublicServiceCategoryCode categories = 6;
+    repeated string segments = 7;
+    repeated ua.gov.diia.types.contextmenu.PublicServiceContextMenu contextMenu = 8;
+    repeated ua.gov.diia.types.session.SessionType sessionTypes = 9;
+    optional ua.gov.diia.types.appversion.PublicServiceAppVersionsBySession appVersions = 10;
+    optional ua.gov.diia.types.appversion.SingleVersionRecord platformMinVersion = 11;
+    optional ua.gov.diia.types.profilefeatures.ProfileFeature profileFeature = 12;
+}
+
+message PublicServiceCategory {
+    ua.gov.diia.types.category.PublicServiceCategoryCode category = 1;
+    string name = 2;
+    string icon = 3;
+    int32 sortOrder = 4;
+    PublicServiceCategoryStatus status = 5;
+    repeated ua.gov.diia.types.PublicServiceTabCode tabCodes = 6;
+    map<string, string> locales = 7;
+}
+
+message PublicServiceCategoryResult {
+    // extends PublicServiceCategory
+    ua.gov.diia.types.category.PublicServiceCategoryCode category = 1;
+    string name = 2;
+    string icon = 3;
+    int32 sortOrder = 4;
+    PublicServiceCategoryStatus status = 5;
+    repeated ua.gov.diia.types.PublicServiceTabCode tabCodes = 6;
+    map<string, string> locales = 7;
+    string id = 8;
+}

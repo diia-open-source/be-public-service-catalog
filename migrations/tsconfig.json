@@ -1,0 +1,15 @@
+{
+    "extends": "../tsconfig.json",
+    "ts-node": {
+        "files": true
+    },
+    "compilerOptions": {
+        "baseUrl": "../",
+        "paths": {
+            "@services/*": ["dist/types/services/*"],
+            "@interfaces/*": ["dist/types/interfaces/*"],
+            "@src/*": ["dist/types/*"]
+        }
+    },
+    "include": ["./**/*"]
+}
