@@ -26,7 +26,7 @@ This repository contains the service which provides capabilities for public serv
 Example:
 
 ```
-git clone https://github.com/diia-open-source/public-service-catalog.git
+git clone https://github.com/diia-open-source/be-public-service-catalog.git public-service-catalog
 ```
 
 ---
