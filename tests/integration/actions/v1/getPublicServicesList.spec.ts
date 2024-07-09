@@ -40,4 +40,21 @@ describe(`Action ${GetPublicServicesList.name}`, () => {
         expect(total).toBe(countDocs)
         expect(publicServices).toHaveLength(countDocs)
     })
+
+    it('get limit public services', async () => {
+        const limit = 10
+
+        // Act
+        const [publicServicesList, countDocs] = await Promise.all([
+            getPublicServicesList.handler({ session, params: { limit }, headers }),
+            publicServiceModel.countDocuments(),
+        ])
+
+        // Assert
+        expect(publicServicesList).toBeDefined()
+        const { total, publicServices } = publicServicesList
+
+        expect(total).toBe(countDocs)
+        expect(publicServices).toHaveLength(limit)
+    })
 })

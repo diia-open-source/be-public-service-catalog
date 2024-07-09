@@ -1,23 +1,22 @@
-import {
-    PublicServiceCategoryCode,
-    PublicServiceCode,
-    PublicServiceContextMenuType,
-    PublicServiceStatus,
-    PublicServiceTabCode,
-    SessionType,
-} from '@diia-inhouse/types'
+import { PublicServiceContextMenuType, PublicServiceStatus, SessionType } from '@diia-inhouse/types'
 
-import { GetPublicServicesResponse, PublicService, PublicServiceCategory, PublicServiceCategoryStatus } from '@src/generated'
+import {
+    GetPublicServicesResponse,
+    PublicService,
+    PublicServiceCategory,
+    PublicServiceCategoryStatus,
+    PublicServiceTabCode,
+} from '@src/generated'
 
 export const publicService: PublicService = {
-    code: PublicServiceCode.criminalRecordCertificate,
-    name: 'Довідка про несудимість',
+    code: 'childResidenceRegistration',
+    name: 'Child residence registration',
     status: PublicServiceStatus.active,
     sortOrder: 100,
     contextMenu: [
         {
             type: PublicServiceContextMenuType.assistantScreen,
-            code: PublicServiceCode.criminalRecordCertificate,
+            code: 'childResidenceRegistration',
             name: 'Questions and answers',
         },
         {
@@ -34,7 +33,7 @@ export const publicService: PublicService = {
         },
     },
     sessionTypes: [SessionType.User],
-    categories: [PublicServiceCategoryCode.certificates],
+    categories: ['residence'],
     segments: [],
     locales: {
         en: '',
@@ -43,7 +42,7 @@ export const publicService: PublicService = {
 
 export const publicServiceCategories: PublicServiceCategory[] = [
     {
-        category: PublicServiceCategoryCode.certificates,
+        category: 'residence',
         name: 'Residence',
         icon: '👦🏻',
         status: PublicServiceCategoryStatus.active,
@@ -58,7 +57,7 @@ export const publicServiceCategories: PublicServiceCategory[] = [
 export const publicServiceCategoryResponse: GetPublicServicesResponse = {
     publicServicesCategories: [
         {
-            code: PublicServiceCategoryCode.certificates,
+            code: 'residence',
             name: 'Residence',
             icon: '👦🏻',
             status: PublicServiceCategoryStatus.active,
@@ -68,15 +67,15 @@ export const publicServiceCategoryResponse: GetPublicServicesResponse = {
             tabCodes: [PublicServiceTabCode.citizen],
             publicServices: [
                 {
-                    code: PublicServiceCode.criminalRecordCertificate,
-                    name: 'Довідка про несудимість',
+                    code: 'childResidenceRegistration',
+                    name: 'Child residence registration',
                     status: PublicServiceStatus.active,
                     sortOrder: 100,
-                    search: 'Довідка про несудимість',
+                    search: 'Child residence registration',
                     contextMenu: [
                         {
                             type: PublicServiceContextMenuType.assistantScreen,
-                            code: PublicServiceCode.criminalRecordCertificate,
+                            code: 'childResidenceRegistration',
                             name: 'Questions and answers',
                         },
                         {

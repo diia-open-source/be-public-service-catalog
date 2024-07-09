@@ -1,18 +1,18 @@
 import TestKit from '@diia-inhouse/test'
 
-import GetPublicServiceCategoriesList from '@actions/v1/getPublicServiceCategoriesList'
+import GetPublicServiceCategoriesListAction from '@actions/v1/getPublicServiceCategoriesList'
 
 import { getApp } from '@tests/utils/getApp'
 
-describe(`Action ${GetPublicServiceCategoriesList.name}`, () => {
+describe(`Action ${GetPublicServiceCategoriesListAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let getPublicServiceCategoriesList: GetPublicServiceCategoriesList
+    let getPublicServiceCategoriesList: GetPublicServiceCategoriesListAction
 
     beforeAll(async () => {
         app = await getApp()
 
-        getPublicServiceCategoriesList = app.container.build(GetPublicServiceCategoriesList)
+        getPublicServiceCategoriesList = app.container.build(GetPublicServiceCategoriesListAction)
 
         await app.start()
     })

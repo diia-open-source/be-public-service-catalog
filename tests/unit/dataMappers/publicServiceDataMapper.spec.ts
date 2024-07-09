@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson'
+import { mongo } from '@diia-inhouse/db'
 
 import PublicServiceDataMapper from '@dataMappers/publicServiceDataMapper'
 
@@ -8,7 +8,7 @@ describe('DataMapper PublicServiceDataMapper', () => {
     const publicServiceDataMapper = new PublicServiceDataMapper()
 
     it('should transform PublicService model to PublicServiceResult', () => {
-        const id = new ObjectId()
+        const id = new mongo.ObjectId()
 
         expect(
             publicServiceDataMapper.toEntity({

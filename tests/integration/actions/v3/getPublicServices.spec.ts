@@ -1,7 +1,9 @@
 import { head } from 'lodash'
 
 import TestKit from '@diia-inhouse/test'
-import { DiiaOfficeStatus, ProfileFeature, PublicServiceCode, PublicServiceStatus, PublicServiceTabCode } from '@diia-inhouse/types'
+import { DiiaOfficeStatus, ProfileFeature, PublicServiceStatus } from '@diia-inhouse/types'
+
+import { PublicServiceTabCode } from '@src/generated'
 
 import GetPublicServicesAction from '@actions/v3/getPublicServices'
 
@@ -14,12 +16,12 @@ import { PublicServiceModel } from '@interfaces/models/publicService'
 describe(`Action ${GetPublicServicesAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let getPublicServicesAction: GetPublicServicesAction
+    let action: GetPublicServicesAction
 
     beforeAll(async () => {
         app = await getApp()
 
-        getPublicServicesAction = app.container.build(GetPublicServicesAction)
+        action = app.container.build(GetPublicServicesAction)
 
         await app.start()
     })
@@ -31,11 +33,11 @@ describe(`Action ${GetPublicServicesAction.name}`, () => {
     it('should filter service that not available for an user by app version', async () => {
         // arrange
         const { headers, session } = testKit.session.getUserActionArguments({}, { appVersion: '3.0.1' })
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = 'residenceCert'
         const { categories } = <PublicServiceModel>await publicServiceModel.findOne({ code, status: PublicServiceStatus.active })
 
         // act
-        const { publicServicesCategories } = await getPublicServicesAction.handler({ headers, session })
+        const { publicServicesCategories } = await action.handler({ headers, session })
 
         // assert
         const publicService = publicServicesCategories
@@ -48,11 +50,11 @@ describe(`Action ${GetPublicServicesAction.name}`, () => {
     it('should return service that available for an user by app version', async () => {
         // arrange
         const { headers, session } = testKit.session.getUserActionArguments()
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = 'residenceCert'
         const { categories } = <PublicServiceModel>await publicServiceModel.findOne({ code, status: PublicServiceStatus.active })
 
         // act
-        const { publicServicesCategories } = await getPublicServicesAction.handler({ headers, session })
+        const { publicServicesCategories } = await action.handler({ headers, session })
 
         // assert
         const publicService = publicServicesCategories
@@ -62,12 +64,83 @@ describe(`Action ${GetPublicServicesAction.name}`, () => {
         expect(publicService!.status).toBe(PublicServiceStatus.active)
     })
 
+    it('should filter service that not available for a user without profile feature', async () => {
+        // arrange
+        const { headers, session } = testKit.session.getUserActionArguments()
+        const code = 'officeBadges'
+        const { categories } = <PublicServiceModel>await publicServiceModel.findOne({ code, status: PublicServiceStatus.active })
+
+        // act
+        const { publicServicesCategories } = await action.handler({ headers, session })
+
+        // assert
+        const publicService = publicServicesCategories
+            .find((item) => categories.includes(item.code))
+            ?.publicServices.find((item) => item.code === code)
+
+        expect(publicService).toBeUndefined()
+    })
+
+    it('should return service that available for a user with profile feature', async () => {
+        // arrange
+        const { headers, session } = testKit.session.getUserActionArguments()
+        const code = 'officeBadges'
+        const { categories } = <PublicServiceModel>await publicServiceModel.findOne({ code, status: PublicServiceStatus.active })
+        const features = {
+            [ProfileFeature.office]: {
+                officeIdentifier: 'test',
+                profileId: 'test',
+                unitId: 'test',
+                status: DiiaOfficeStatus.ACTIVE,
+                tokenFailedAt: undefined,
+                isOrganizationAdmin: false,
+                organizationId: 'test',
+                scopes: [],
+            },
+        }
+
+        // act
+        const { publicServicesCategories } = await action.handler({ headers, session: { ...session, features } })
+
+        // assert
+        const publicService = publicServicesCategories
+            .find((item) => categories.includes(item.code))
+            ?.publicServices.find((item) => item.code === code)
+
+        expect(publicService!.status).toBe(PublicServiceStatus.active)
+    })
+
+    it('must return office tab for user with office feature', async () => {
+        // arrange
+        const { headers, session } = testKit.session.getUserActionArguments()
+        const features = {
+            [ProfileFeature.office]: {
+                officeIdentifier: 'test',
+                profileId: 'test',
+                unitId: 'test',
+                status: DiiaOfficeStatus.ACTIVE,
+                tokenFailedAt: undefined,
+                isOrganizationAdmin: false,
+                organizationId: 'test',
+                scopes: [],
+            },
+        }
+
+        // act
+        const { tabs } = await action.handler({ headers, session: { ...session, features } })
+
+        // assert
+        const officeTab = tabs.find((item) => item.code === PublicServiceTabCode.office)
+
+        expect(officeTab).toBeDefined()
+    })
+
     it('must not return office tab for user without office feature', async () => {
         // arrange
         const { headers, session } = testKit.session.getUserActionArguments()
 
         // act
-        const { tabs } = await getPublicServicesAction.handler({ headers, session })
+        const { tabs } = await action.handler({ headers, session })
 
         // assert
         const officeTab = tabs.find((item) => item.code === PublicServiceTabCode.office)
@@ -92,7 +165,7 @@ describe(`Action ${GetPublicServicesAction.name}`, () => {
         }
 
         // act
-        const { tabs } = await getPublicServicesAction.handler({ headers, session: { ...session, features } })
+        const { tabs } = await action.handler({ headers, session: { ...session, features } })
 
         // assert
         const officeTab = tabs.find((item) => item.code === PublicServiceTabCode.office)
@@ -117,11 +190,11 @@ describe(`Action ${GetPublicServicesAction.name}`, () => {
         }
 
         // act
-        const { publicServicesCategories } = await getPublicServicesAction.handler({ headers, session: { ...session, features } })
+        const { publicServicesCategories } = await action.handler({ headers, session: { ...session, features } })
 
         // assert
-        publicServicesCategories.forEach((category) => {
+        for (const category of publicServicesCategories) {
             expect(category.tabCode).toBe(head(category.tabCodes))
-        })
+        }
     })
 })

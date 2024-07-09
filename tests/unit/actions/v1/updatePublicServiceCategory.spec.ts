@@ -1,5 +1,4 @@
 import TestKit, { mockInstance } from '@diia-inhouse/test'
-import { PublicServiceCategoryCode } from '@diia-inhouse/types'
 
 import { PublicServiceCategoryStatus } from '@src/generated'
 
@@ -10,14 +9,14 @@ import PublicServiceCategoriesService from '@services/publicCategories'
 describe('UpdatePublicServiceCategoryAction', () => {
     const testKit = new TestKit()
     const publicServiceCategoriesServiceMock = mockInstance(PublicServiceCategoriesService)
-    const updatePublicServiceCategoryAction = new UpdatePublicServiceCategoryAction(publicServiceCategoriesServiceMock)
+    const action = new UpdatePublicServiceCategoryAction(publicServiceCategoriesServiceMock)
 
     describe('method `handler`', () => {
         it('should successfully update public service category', async () => {
             const args = {
                 headers: testKit.session.getHeaders(),
                 params: {
-                    category: PublicServiceCategoryCode.certificates,
+                    category: 'public-service-category-code',
                     icon: 'icon',
                     locales: {},
                     name: 'Name',
@@ -31,7 +30,7 @@ describe('UpdatePublicServiceCategoryAction', () => {
 
             jest.spyOn(publicServiceCategoriesServiceMock, 'updateCategory').mockResolvedValueOnce(publicServiceCategory)
 
-            expect(await updatePublicServiceCategoryAction.handler(args)).toEqual(publicServiceCategory)
+            expect(await action.handler(args)).toEqual(publicServiceCategory)
 
             expect(publicServiceCategoriesServiceMock.updateCategory).toHaveBeenCalledWith(publicServiceCategory)
         })

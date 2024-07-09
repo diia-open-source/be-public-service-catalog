@@ -1,6 +1,6 @@
 import { GrpcAppAction } from '@diia-inhouse/diia-app'
 
-import { ActionVersion, PublicServiceCode, SessionType } from '@diia-inhouse/types'
+import { ActionVersion, SessionType } from '@diia-inhouse/types'
 import { ValidationSchema } from '@diia-inhouse/validators'
 
 import PublicService from '@services/public'
@@ -17,7 +17,7 @@ export default class GetPublicServiceByCodeAction implements GrpcAppAction {
     readonly name: string = 'getPublicServiceByCode'
 
     readonly validationRules: ValidationSchema = {
-        code: { type: 'string', enum: Object.values(PublicServiceCode) },
+        code: { type: 'string' },
     }
 
     async handler(args: CustomActionArguments): Promise<ActionResult> {

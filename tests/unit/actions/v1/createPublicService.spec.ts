@@ -1,7 +1,5 @@
 import TestKit, { mockInstance } from '@diia-inhouse/test'
-import { PublicServiceCategoryCode, PublicServiceCode, PublicServiceStatus, SessionType } from '@diia-inhouse/types'
-
-import Utils from '@src/utils'
+import { PublicServiceStatus, SessionType } from '@diia-inhouse/types'
 
 import CreatePublicServiceAction from '@actions/v1/createPublicService'
 
@@ -10,15 +8,14 @@ import PublicServiceService from '@services/public'
 describe('CreatePublicServiceAction', () => {
     const testKit = new TestKit()
     const publicServiceServiceMock = mockInstance(PublicServiceService)
-    const utilsMock = mockInstance(Utils)
-    const createPublicServiceAction = new CreatePublicServiceAction(publicServiceServiceMock, utilsMock)
+    const action = new CreatePublicServiceAction(publicServiceServiceMock)
 
     describe('method `handler`', () => {
         it('should successfully handle public service creation', async () => {
             const args = {
                 params: {
-                    categories: [PublicServiceCategoryCode.certificates],
-                    code: PublicServiceCode.criminalRecordCertificate,
+                    categories: ['public-service-category-code'],
+                    code: 'public-service-code',
                     contextMenu: [],
                     locales: {},
                     name: 'Name',
@@ -34,7 +31,7 @@ describe('CreatePublicServiceAction', () => {
 
             jest.spyOn(publicServiceServiceMock, 'createPublicService').mockResolvedValueOnce(service)
 
-            expect(await createPublicServiceAction.handler(args)).toEqual(service)
+            expect(await action.handler(args)).toEqual(service)
 
             expect(publicServiceServiceMock.createPublicService).toHaveBeenCalledWith(service)
         })

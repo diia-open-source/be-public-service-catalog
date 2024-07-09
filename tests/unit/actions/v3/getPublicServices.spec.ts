@@ -7,7 +7,7 @@ import PublicServiceCategoriesService from '@services/publicCategories'
 describe('GetPublicServicesAction', () => {
     const testKit = new TestKit()
     const publicServiceCategoriesServiceMock = mockInstance(PublicServiceCategoriesService)
-    const getPublicServicesAction = new GetPublicServicesAction(publicServiceCategoriesServiceMock)
+    const action = new GetPublicServicesAction(publicServiceCategoriesServiceMock)
 
     describe('method `handler`', () => {
         it('should successfully get public services list', async () => {
@@ -26,7 +26,7 @@ describe('GetPublicServicesAction', () => {
 
             jest.spyOn(publicServiceCategoriesServiceMock, 'getPublicServicesCategories').mockResolvedValueOnce(expectedResult)
 
-            expect(await getPublicServicesAction.handler(args)).toEqual(expectedResult)
+            expect(await action.handler(args)).toEqual(expectedResult)
 
             expect(publicServiceCategoriesServiceMock.getPublicServicesCategories).toHaveBeenCalledWith(user, features, headers)
         })

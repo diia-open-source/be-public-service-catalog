@@ -1,24 +1,23 @@
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
 
-import GetPublicServiceContextMenuAction from '@src/actions/v1/getPublicServiceContextMenu'
+import GetPublicServiceContextMenuV2Action from '@src/actions/v2/getPublicServiceContextMenuV2'
 
 import publicServiceModel from '@models/publicService'
 
 import { getApp } from '@tests/utils/getApp'
 
-import { ActionResult } from '@interfaces/actions/v1/getPublicServiceContextMenu'
+import { ActionResult } from '@interfaces/actions/v2/getPublicServiceContextMenuV2'
 import { PublicServiceModel } from '@interfaces/models/publicService'
 
-describe(`Action ${GetPublicServiceContextMenuAction.name}`, () => {
+describe(`Action ${GetPublicServiceContextMenuV2Action.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let action: GetPublicServiceContextMenuAction
+    let action: GetPublicServiceContextMenuV2Action
 
     beforeAll(async () => {
         app = await getApp()
 
-        action = app.container.build(GetPublicServiceContextMenuAction)
+        action = app.container.build(GetPublicServiceContextMenuV2Action)
 
         await app.start()
     })
@@ -32,7 +31,7 @@ describe(`Action ${GetPublicServiceContextMenuAction.name}`, () => {
         const headers = testKit.session.getHeaders()
 
         // Act
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = 'criminalRecordCertificate'
         const result = await action.handler({ headers, params: { code } })
 
         // Assert

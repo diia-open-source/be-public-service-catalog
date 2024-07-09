@@ -17,7 +17,7 @@ jest.mock('@diia-inhouse/utils', () => {
 })
 jest.mock('compare-versions', () => compareVersionsMock)
 
-import { AsyncLocalStorage } from 'async_hooks'
+import { AsyncLocalStorage } from 'node:async_hooks'
 
 import { clone, merge } from 'lodash'
 
@@ -25,7 +25,7 @@ import { MongoDBErrorCode } from '@diia-inhouse/db'
 import { ApiError, BadRequestError, ModelNotFoundError } from '@diia-inhouse/errors'
 import TestKit, { mockInstance } from '@diia-inhouse/test'
 import MongooseMock from '@diia-inhouse/test/mongooseMock'
-import { AlsData, PlatformType, ProfileFeature, PublicServiceCode, PublicServiceStatus, SessionType } from '@diia-inhouse/types'
+import { AlsData, PlatformType, ProfileFeature, PublicServiceStatus, SessionType, UserFeatures } from '@diia-inhouse/types'
 
 import PublicServiceService from '@services/public'
 
@@ -33,6 +33,7 @@ import publicServiceModel from '@models/publicService'
 
 import PublicServiceDataMapper from '@dataMappers/publicServiceDataMapper'
 
+import { userServiceClient } from '@tests/mocks/grpc/clients'
 import { publicService } from '@tests/mocks/publicServices'
 
 describe(`Service PublicService`, () => {
@@ -41,28 +42,11 @@ describe(`Service PublicService`, () => {
     const publicServiceDataMapper: PublicServiceDataMapper = mockInstance(PublicServiceDataMapper)
     const asyncStorage = mockInstance(AsyncLocalStorage<AlsData>)
 
-    const userServiceClient = {
-        getSubscribedSegments: jest.fn(),
-        getUserInfoForFilters: jest.fn(),
-        getUserProfileFeatures: jest.fn(),
-        getUserDocuments: jest.fn(),
-        hasDocuments: jest.fn(),
-        getUserProfiles: jest.fn(),
-        getMyInfo: jest.fn(),
-        getFamily: jest.fn(),
-        getUserBirthRecord: jest.fn(),
-        getActRecords: jest.fn(),
-        hideActRecord: jest.fn(),
-        updateUserSettingsts: jest.fn(),
-        unhideActRecords: jest.fn(),
-        updateUserSettings: jest.fn(),
-    }
-
     const service = new PublicServiceService(publicServiceDataMapper, asyncStorage, userServiceClient)
 
     describe('method: getPublicServiceByCode', () => {
         it('should throw ModelNotFoundError if return nothing', async () => {
-            const code = PublicServiceCode.criminalRecordCertificate
+            const code = 'administrativeFees'
 
             mongooseMock.setResultChain(['findOne', 'lean'], undefined)
             await expect(service.getPublicServiceByCode(code)).rejects.toEqual(new ModelNotFoundError('Public service', code))
@@ -70,7 +54,7 @@ describe(`Service PublicService`, () => {
 
         it('should return publicService', async () => {
             const copyPublicService = clone(publicService)
-            const code = PublicServiceCode.criminalRecordCertificate
+            const code = 'administrativeFees'
             const publicServiceSettings = merge({ id: 'id' }, copyPublicService)
 
             mongooseMock.setResultChain(['findOne', 'lean'], copyPublicService)
@@ -166,6 +150,42 @@ describe(`Service PublicService`, () => {
                 [
                     {
                         ...clone(publicService),
+                        status: PublicServiceStatus.inactive,
+                        contextMenu: [],
+                        profileFeature: undefined,
+                    },
+                ],
+            ],
+            [
+                PublicServiceStatus.inactive,
+                'office official workspace is not allowed',
+                <UserFeatures>{
+                    office: {
+                        googleWorkspace: 'false',
+                    },
+                },
+                testKit.session.getHeaders({
+                    platformVersion: '12',
+                    platformType: PlatformType.Android,
+                }),
+                [
+                    {
+                        ...clone(publicService),
+                        code: 'officeOfficialWorkspace',
+                        status: PublicServiceStatus.active,
+                        platformMinVersion: {
+                            [PlatformType.Android]: '13',
+                        },
+                    },
+                ],
+                (): void => {
+                    utilsMock.filterByAppVersions.mockReturnValueOnce([])
+                    compareVersionsMock.compare.mockReturnValueOnce(false)
+                },
+                [
+                    {
+                        ...clone(publicService),
+                        code: 'officeOfficialWorkspace',
                         status: PublicServiceStatus.inactive,
                         contextMenu: [],
                         profileFeature: undefined,
@@ -424,9 +444,7 @@ describe(`Service PublicService`, () => {
 
             mongooseMock.setResultChain(['find', 'sort', 'lean'], [copyPublicService])
 
-            await expect(
-                service.isPublicServiceAvailableByCode(PublicServiceCode.criminalRecordCertificate, SessionType.User, {}, headers),
-            ).resolves.toBeFalsy()
+            await expect(service.isPublicServiceAvailableByCode('administrativeFees', SessionType.User, {}, headers)).resolves.toBeFalsy()
         })
 
         it('should return false when publicService is inactive', async () => {
@@ -542,7 +560,7 @@ describe(`Service PublicService`, () => {
 
     describe('method: getPublicServiceContextMenu', () => {
         it('should successfully return public service context menu', async () => {
-            const code = PublicServiceCode.criminalRecordCertificate
+            const code = 'childResidenceRegistration'
             const headers = testKit.session.getHeaders()
             const publicServiceInstance = new publicServiceModel(publicService)
 
@@ -557,7 +575,7 @@ describe(`Service PublicService`, () => {
         })
 
         it('should successfully return empty public service context menu in case public service not found', async () => {
-            const code = <PublicServiceCode>'not-found'
+            const code = 'administrativeFees'
             const publicServiceInstance = new publicServiceModel(publicService)
 
             mongooseMock.setResultChain(['find', 'sort', 'lean'], [publicServiceInstance])

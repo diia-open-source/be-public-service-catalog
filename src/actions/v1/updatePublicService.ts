@@ -5,8 +5,6 @@ import {
     AppVersions,
     PlatformType,
     ProfileFeature,
-    PublicServiceCategoryCode,
-    PublicServiceCode,
     PublicServiceContextMenuType,
     PublicServiceStatus,
     SessionType,
@@ -21,24 +19,7 @@ import PublicServiceService from '@services/public'
 import { ActionResult, CustomActionArguments } from '@interfaces/actions/v1/updatePublicService'
 
 export default class UpdatePublicServiceAction implements GrpcAppAction {
-    private readonly appVersionValidationRules: ObjectRule<AppVersions> = {
-        type: 'object',
-        props: {
-            versions: this.utils.toObjectValidationRule(Object.values(PlatformType), {
-                type: 'array',
-                items: { type: 'string' },
-                optional: true,
-            }),
-            minVersion: this.utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
-            maxVersion: this.utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
-        },
-        optional: true,
-    }
-
-    constructor(
-        private readonly publicService: PublicServiceService,
-        private readonly utils: Utils,
-    ) {}
+    constructor(private readonly publicService: PublicServiceService) {}
 
     readonly sessionType: SessionType = SessionType.Partner
 
@@ -46,12 +27,25 @@ export default class UpdatePublicServiceAction implements GrpcAppAction {
 
     readonly name: string = 'updatePublicService'
 
+    private readonly appVersionValidationRules: ObjectRule<AppVersions> = {
+        type: 'object',
+        props: {
+            versions: Utils.toObjectValidationRule(Object.values(PlatformType), {
+                type: 'array',
+                items: { type: 'string' },
+                optional: true,
+            }),
+            minVersion: Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
+            maxVersion: Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
+        },
+        optional: true,
+    }
+
     readonly validationRules: ValidationSchema<Omit<CustomActionArguments['params'], 'locales'>> = {
-        code: { type: 'string', enum: Object.values(PublicServiceCode) },
+        code: { type: 'string' },
         categories: {
             type: 'array',
             items: { type: 'string' },
-            enum: Object.values(PublicServiceCategoryCode),
             optional: true,
         },
         name: { type: 'string', optional: true },
@@ -70,10 +64,10 @@ export default class UpdatePublicServiceAction implements GrpcAppAction {
             },
             optional: true,
         },
-        appVersions: this.utils.toObjectValidationRule(Object.values(SessionType), this.appVersionValidationRules),
+        appVersions: Utils.toObjectValidationRule(Object.values(SessionType), this.appVersionValidationRules),
         segments: { type: 'array', items: { type: 'string' }, optional: true },
         sessionTypes: { type: 'array', items: { type: 'string', enum: Object.values(SessionType) }, optional: true },
-        platformMinVersion: this.utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
+        platformMinVersion: Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
         profileFeature: { type: 'string', enum: Object.values(ProfileFeature), optional: true },
     }
 

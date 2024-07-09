@@ -1,6 +1,5 @@
 import { ModelNotFoundError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
 
 import { PublicService } from '@src/generated'
 
@@ -15,15 +14,15 @@ import { ActionResult } from '@interfaces/actions/v1/updatePublicService'
 describe(`Action ${UpdatePublicServiceAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let updatePublicServiceAction: UpdatePublicServiceAction
+    let action: UpdatePublicServiceAction
 
-    const testServiceCode = PublicServiceCode.criminalRecordCertificate
+    const testServiceCode = 'vaccinationCertificate'
     let testService: PublicService | null
 
     beforeAll(async () => {
         app = await getApp()
 
-        updatePublicServiceAction = app.container.build(UpdatePublicServiceAction)
+        action = app.container.build(UpdatePublicServiceAction)
 
         await app.start()
 
@@ -42,7 +41,7 @@ describe(`Action ${UpdatePublicServiceAction.name}`, () => {
     })
 
     it('updates public service', async () => {
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = 'vaccinationCertificate'
         const updatePublicService = {
             name: 'New name',
             sortOrder: 999,
@@ -59,7 +58,7 @@ describe(`Action ${UpdatePublicServiceAction.name}`, () => {
         expect(publicServiceInDb!.sortOrder).not.toEqual(updatePublicService.sortOrder)
 
         // Act
-        const updatedPublicService: ActionResult = await updatePublicServiceAction.handler({
+        const updatedPublicService: ActionResult = await action.handler({
             headers,
             session,
             params: { ...updatePublicService, code },
@@ -74,7 +73,7 @@ describe(`Action ${UpdatePublicServiceAction.name}`, () => {
 
     it('fails to update public service when service not found', async () => {
         const updatePublicService = {
-            code: <PublicServiceCode>'unknown',
+            code: 'unknown',
             name: 'Not found',
             segments: [],
             categories: [],
@@ -84,8 +83,6 @@ describe(`Action ${UpdatePublicServiceAction.name}`, () => {
         }
 
         // Act
-        await expect(updatePublicServiceAction.handler({ headers, session, params: updatePublicService })).rejects.toThrow(
-            ModelNotFoundError,
-        )
+        await expect(action.handler({ headers, session, params: updatePublicService })).rejects.toThrow(ModelNotFoundError)
     })
 })

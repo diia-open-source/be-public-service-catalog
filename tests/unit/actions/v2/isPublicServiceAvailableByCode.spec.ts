@@ -1,17 +1,17 @@
 import TestKit, { mockInstance } from '@diia-inhouse/test'
-import { PublicServiceCode, SessionType } from '@diia-inhouse/types'
+import { SessionType } from '@diia-inhouse/types'
 
-import IsPublicServiceAvailableByCodeAction from '@actions/v1/isPublicServiceAvailableByCode'
+import IsPublicServiceAvailableByCodeV2Action from '@actions/v2/isPublicServiceAvailableByCodeV2'
 
 import PublicServiceService from '@services/public'
 
-describe('Action GetPublicServiceSettingsAction', () => {
+describe('Action IsPublicServiceAvailableByCodeV2Action', () => {
     const service = mockInstance(PublicServiceService)
-    const action = new IsPublicServiceAvailableByCodeAction(service)
+    const action = new IsPublicServiceAvailableByCodeV2Action(service)
     const testKit = new TestKit()
 
     const headers = testKit.session.getHeaders()
-    const code = PublicServiceCode.criminalRecordCertificate
+    const code = 'public-service-code'
 
     it('should call extractProfileFeatures and publicCategoriesService', async () => {
         const isAvailable = true

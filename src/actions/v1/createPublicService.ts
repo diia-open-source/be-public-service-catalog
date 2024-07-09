@@ -5,8 +5,6 @@ import {
     AppVersions,
     PlatformType,
     ProfileFeature,
-    PublicServiceCategoryCode,
-    PublicServiceCode,
     PublicServiceContextMenuType,
     PublicServiceStatus,
     SessionType,
@@ -20,24 +18,7 @@ import PublicService from '@services/public'
 import { ActionResult, CustomActionArguments } from '@interfaces/actions/v1/createPublicService'
 
 export default class CreatePublicServiceAction implements GrpcAppAction {
-    private readonly appVersionValidationRules: ObjectRule<AppVersions> = {
-        type: 'object',
-        props: {
-            versions: this.utils.toObjectValidationRule(Object.values(PlatformType), {
-                type: 'array',
-                items: { type: 'string' },
-                optional: true,
-            }),
-            minVersion: this.utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
-            maxVersion: this.utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
-        },
-        optional: true,
-    }
-
-    constructor(
-        private readonly publicService: PublicService,
-        private readonly utils: Utils,
-    ) {}
+    constructor(private readonly publicService: PublicService) {}
 
     readonly sessionType: SessionType = SessionType.Partner
 
@@ -45,8 +26,22 @@ export default class CreatePublicServiceAction implements GrpcAppAction {
 
     readonly name: string = 'createPublicService'
 
+    private readonly appVersionValidationRules: ObjectRule<AppVersions> = {
+        type: 'object',
+        props: {
+            versions: Utils.toObjectValidationRule(Object.values(PlatformType), {
+                type: 'array',
+                items: { type: 'string' },
+                optional: true,
+            }),
+            minVersion: Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
+            maxVersion: Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'string', optional: true }),
+        },
+        optional: true,
+    }
+
     readonly validationRules: ValidationSchema = {
-        code: { type: 'string', enum: Object.values(PublicServiceCode) },
+        code: { type: 'string' },
         name: { type: 'string' },
         status: { type: 'string', enum: Object.values(PublicServiceStatus) },
         sortOrder: { type: 'number', convert: true },
@@ -54,7 +49,6 @@ export default class CreatePublicServiceAction implements GrpcAppAction {
         categories: {
             type: 'array',
             items: { type: 'string' },
-            enum: Object.values(PublicServiceCategoryCode),
             optional: true,
         },
         contextMenu: {

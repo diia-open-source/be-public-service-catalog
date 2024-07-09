@@ -1,6 +1,6 @@
 import { GrpcAppAction } from '@diia-inhouse/diia-app'
 
-import { ActionVersion, PublicServiceCategoryCode, SessionType } from '@diia-inhouse/types'
+import { ActionVersion, SessionType } from '@diia-inhouse/types'
 import { ValidationSchema } from '@diia-inhouse/validators'
 
 import { PublicServiceCategoryStatus } from '@src/generated'
@@ -19,7 +19,7 @@ export default class CreatePublicServiceCategoryAction implements GrpcAppAction 
     readonly name: string = 'createPublicServiceCategory'
 
     readonly validationRules: ValidationSchema = {
-        category: { type: 'string', enum: Object.values(PublicServiceCategoryCode) },
+        category: { type: 'string' },
         name: { type: 'string' },
         icon: { type: 'string' },
         status: { type: 'string', enum: Object.values(PublicServiceCategoryStatus) },

@@ -1,11 +1,10 @@
-import { AsyncLocalStorage } from 'async_hooks'
+import { AsyncLocalStorage } from 'node:async_hooks'
 
 import compareVersions from 'compare-versions'
-import { FilterQuery } from 'mongoose'
 
 import { clientCallOptions } from '@diia-inhouse/diia-app'
 
-import { MongoDBErrorCode } from '@diia-inhouse/db'
+import { FilterQuery, MongoDBErrorCode } from '@diia-inhouse/db'
 import { BadRequestError, ModelNotFoundError } from '@diia-inhouse/errors'
 import {
     ActHeaders,
@@ -14,7 +13,6 @@ import {
     AppUser,
     PlatformType,
     ProfileFeature,
-    PublicServiceCode,
     PublicServiceContextMenu,
     PublicServiceSettings,
     PublicServiceStatus,
@@ -40,8 +38,8 @@ export default class PublicServiceService {
         private readonly userServiceClient: UserServiceClient,
     ) {}
 
-    private readonly serviceAvailabilityStrategies: Partial<Record<PublicServiceCode, (features: UserFeatures) => boolean>> = {
-        [PublicServiceCode.officeOfficialWorkspace]: (features) => features[ProfileFeature.office]?.googleWorkspace === 'true',
+    private readonly serviceAvailabilityStrategies: Record<string, (features: UserFeatures) => boolean> = {
+        officeOfficialWorkspace: (features) => features[ProfileFeature.office]?.googleWorkspace === 'true',
     }
 
     async createPublicService(publicService: PublicService): Promise<PublicService> {
@@ -49,9 +47,9 @@ export default class PublicServiceService {
             const newPublicService = await publicServiceModel.create(publicService)
 
             return newPublicService
-        } catch (e) {
-            return utils.handleError(e, (err) => {
-                if (err.getCode() === MongoDBErrorCode.DuplicateKey) {
+        } catch (err) {
+            return utils.handleError(err, (handledError) => {
+                if (handledError.getCode() === MongoDBErrorCode.DuplicateKey) {
                     throw new BadRequestError(`Public service ${publicService.code} already exists`)
                 }
 
@@ -60,7 +58,7 @@ export default class PublicServiceService {
         }
     }
 
-    async getPublicServiceByCode(code: PublicServiceCode): Promise<PublicServiceSettings> {
+    async getPublicServiceByCode(code: string): Promise<PublicServiceSettings> {
         const query: FilterQuery<PublicService> = { code }
         const publicService = await publicServiceModel.findOne(query).lean()
 
@@ -71,7 +69,7 @@ export default class PublicServiceService {
         return this.publicServiceDataMapper.toEntity(publicService)
     }
 
-    async getPublicServiceContextMenu(code: PublicServiceCode): Promise<PublicServiceContextMenu[]> {
+    async getPublicServiceContextMenu(code: string): Promise<PublicServiceContextMenu[]> {
         const publicService = await this.getPublicService(code)
         if (!publicService) {
             return []
@@ -140,7 +138,7 @@ export default class PublicServiceService {
 
         return validatedPublicServices.map((publicService) => {
             const { segments, status } = publicService
-            if (status === PublicServiceStatus.inactive || !segments.length) {
+            if (status === PublicServiceStatus.inactive || segments.length === 0) {
                 return publicService
             }
 
@@ -160,7 +158,7 @@ export default class PublicServiceService {
     }
 
     async isPublicServiceAvailableByCode(
-        code: PublicServiceCode,
+        code: string,
         sessionType: SessionType,
         userFeatures: UserFeatures,
         headers: ActHeaders,
@@ -209,14 +207,14 @@ export default class PublicServiceService {
 
     private async fetchPublicServices(): Promise<PublicServiceModel[]> {
         const query: FilterQuery<PublicServiceModel> = {
-            status: { $in: [PublicServiceStatus.active, PublicServiceStatus.inDevelopment] },
+            status: { $in: [PublicServiceStatus.active] },
         }
         const publicServices: PublicServiceModel[] = await publicServiceModel.find(query).sort({ sortOrder: 1 }).lean()
 
         return publicServices
     }
 
-    private async getPublicService(code: PublicServiceCode): Promise<PublicServiceModel | undefined> {
+    private async getPublicService(code: string): Promise<PublicServiceModel | undefined> {
         const publicServices = await this.fetchPublicServices()
 
         return publicServices.find((service) => service.code === code)

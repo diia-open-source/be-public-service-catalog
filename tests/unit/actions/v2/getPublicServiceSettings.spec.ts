@@ -1,23 +1,20 @@
 import TestKit, { mockInstance } from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
 
-import GetPublicServiceSettingsAction from '@actions/v1/getPublicServiceSettings'
+import GetPublicServiceSettingsV2Action from '@actions/v2/getPublicServiceSettingsV2'
 
 import PublicServiceService from '@services/public'
 
-describe('Action GetPublicServiceSettingsAction', () => {
+describe('Action GetPublicServiceSettingsV2Action', () => {
     const service = mockInstance(PublicServiceService)
-    const action = new GetPublicServiceSettingsAction(service)
+    const action = new GetPublicServiceSettingsV2Action(service)
     const testKit = new TestKit()
 
     const headers = testKit.session.getHeaders()
-    const code = PublicServiceCode.criminalRecordCertificate
+    const code = 'public-service-code'
 
     it('should call extractProfileFeatures and publicCategoriesService', async () => {
         await action.handler({
-            params: {
-                code,
-            },
+            params: { code },
             headers,
         })
 

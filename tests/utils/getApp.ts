@@ -1,8 +1,4 @@
-import { asClass } from 'awilix'
-
-import { Application, GrpcService, ServiceContext, ServiceOperator } from '@diia-inhouse/diia-app'
-
-import { mockClass } from '@diia-inhouse/test'
+import { Application, ServiceContext, ServiceOperator } from '@diia-inhouse/diia-app'
 
 import configFactory from '@src/config'
 
@@ -17,11 +13,10 @@ export async function getApp(): Promise<ServiceOperator<AppConfig, AppDeps & Tes
     const app = new Application<ServiceContext<AppConfig, AppDeps & TestDeps>>(serviceName)
 
     await app.setConfig(configFactory)
+    await app.setDeps(deps)
+    const appOperator = await app.initialize()
 
-    app.setDeps(deps)
-    app.overrideDeps({
-        grpcService: asClass(mockClass(GrpcService)).singleton(),
-    })
+    await appOperator.start()
 
-    return app.initialize()
+    return appOperator
 }

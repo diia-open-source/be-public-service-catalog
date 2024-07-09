@@ -1,24 +1,23 @@
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
 
-import GetPublicServiceSettingsAction from '@src/actions/v1/getPublicServiceSettings'
+import GetPublicServiceSettingsV2Action from '@src/actions/v2/getPublicServiceSettingsV2'
 
 import publicServiceModel from '@models/publicService'
 
 import { getApp } from '@tests/utils/getApp'
 
-import { ActionResult } from '@interfaces/actions/v1/getPublicServiceSettings'
+import { ActionResult } from '@interfaces/actions/v2/getPublicServiceSettingsV2'
 import { PublicServiceModel } from '@interfaces/models/publicService'
 
-describe(`Action ${GetPublicServiceSettingsAction.name}`, () => {
+describe(`Action ${GetPublicServiceSettingsV2Action.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let getPublicServiceSettingsAction: GetPublicServiceSettingsAction
+    let getPublicServiceSettingsAction: GetPublicServiceSettingsV2Action
 
     beforeAll(async () => {
         app = await getApp()
 
-        getPublicServiceSettingsAction = app.container.build(GetPublicServiceSettingsAction)
+        getPublicServiceSettingsAction = app.container.build(GetPublicServiceSettingsV2Action)
 
         await app.start()
     })
@@ -32,7 +31,7 @@ describe(`Action ${GetPublicServiceSettingsAction.name}`, () => {
         const headers = testKit.session.getHeaders()
 
         // Act
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = 'penalties'
         const result = await getPublicServiceSettingsAction.handler({ headers, params: { code } })
 
         // Assert

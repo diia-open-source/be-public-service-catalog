@@ -1,6 +1,5 @@
 import { ModelNotFoundError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCategoryCode } from '@diia-inhouse/types'
 
 import { PublicServiceCategory } from '@src/generated'
 
@@ -15,15 +14,15 @@ import { ActionResult } from '@interfaces/actions/v1/updatePublicServiceCategory
 describe(`Action ${UpdatePublicServiceCategoryAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let updatePublicServiceCategoryAction: UpdatePublicServiceCategoryAction
+    let action: UpdatePublicServiceCategoryAction
 
-    const testCategoryCode = PublicServiceCategoryCode.medicalServices
+    const testCategoryCode = 'medicalServices'
     let testCategory: PublicServiceCategory | null
 
     beforeAll(async () => {
         app = await getApp()
 
-        updatePublicServiceCategoryAction = app.container.build(UpdatePublicServiceCategoryAction)
+        action = app.container.build(UpdatePublicServiceCategoryAction)
 
         await app.start()
 
@@ -41,8 +40,8 @@ describe(`Action ${UpdatePublicServiceCategoryAction.name}`, () => {
         await publicServiceCategoryModel.updateOne({ category: testCategoryCode }, { ...testCategory }, { upsert: true })
     })
 
-    it('updates public service category and invalidates cache', async () => {
-        const category: PublicServiceCategoryCode = PublicServiceCategoryCode.certificates
+    it('updates public service category', async () => {
+        const category = 'medicalServices'
         const updatePublicServiceCategory = { name: 'New name', sortOrder: 999, tabCodes: [], locales: {} }
 
         let publicServiceCategoryInDb = await publicServiceCategoryModel.findOne({ category })
@@ -51,7 +50,7 @@ describe(`Action ${UpdatePublicServiceCategoryAction.name}`, () => {
         expect(publicServiceCategoryInDb!.sortOrder).not.toEqual(updatePublicServiceCategory.sortOrder)
 
         // Act
-        const result: ActionResult = await updatePublicServiceCategoryAction.handler({
+        const result: ActionResult = await action.handler({
             headers,
             session,
             params: { ...updatePublicServiceCategory, category },
@@ -65,11 +64,9 @@ describe(`Action ${UpdatePublicServiceCategoryAction.name}`, () => {
     })
 
     it('fails to update public service when service not found', async () => {
-        const updatePublicService = { category: <PublicServiceCategoryCode>'unknown', name: 'Not found', tabCodes: [], locales: {} }
+        const updatePublicService = { category: 'unknown', name: 'Not found', tabCodes: [], locales: {} }
 
         // Act
-        await expect(updatePublicServiceCategoryAction.handler({ headers, session, params: updatePublicService })).rejects.toThrow(
-            ModelNotFoundError,
-        )
+        await expect(action.handler({ headers, session, params: updatePublicService })).rejects.toThrow(ModelNotFoundError)
     })
 })

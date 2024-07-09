@@ -1,14 +1,17 @@
-import { ApiError, BadRequestError } from '@diia-inhouse/errors'
+import { randomUUID } from 'node:crypto'
+
+import { Document } from '@diia-inhouse/db'
+import { BadRequestError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
+import { PublicServiceStatus, SessionType } from '@diia-inhouse/types'
+
+import { PublicService } from '@src/generated'
 
 import CreatePublicServiceAction from '@actions/v1/createPublicService'
 
 import publicServiceModel from '@models/publicService'
 
 import { getApp } from '@tests/utils/getApp'
-
-import { ActionResult } from '@interfaces/actions/v1/createPublicService'
 
 describe(`Action ${CreatePublicServiceAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
@@ -30,44 +33,54 @@ describe(`Action ${CreatePublicServiceAction.name}`, () => {
     it('creates new public service', async () => {
         const headers = testKit.session.getHeaders()
         const session = testKit.session.getPartnerSession()
-        const code = PublicServiceCode.criminalRecordCertificate
-        const publicService = await publicServiceModel.findOne({ code }).lean()
-
-        await publicServiceModel.deleteOne({ code })
-
-        let publicServiceInDb = await publicServiceModel.findOne({ code })
-
-        expect(publicServiceInDb).toBeNull()
+        const code = `public-service-code-${randomUUID()}`
+        const params = {
+            code,
+            categories: [`public-service-category-code-${randomUUID()}`],
+            name: 'public-service-name',
+            status: PublicServiceStatus.active,
+            sortOrder: 134,
+            segments: [],
+            sessionTypes: [SessionType.User],
+            locales: { en: 'en' },
+            contextMenu: [],
+        }
 
         // Act
-        const createdPublicService: ActionResult = await action.handler({ headers, session, params: publicService! })
+        const createdPublicService = <Document<unknown, object, PublicService>>(<unknown>await action.handler({ headers, session, params }))
 
-        expect(createdPublicService).toMatchObject(publicService!)
+        expect(createdPublicService.toObject()).toMatchObject(params)
 
-        publicServiceInDb = await publicServiceModel.findOne({ code })
+        const publicServiceInDb = await publicServiceModel.findOne({ code })
 
         expect(publicServiceInDb).toBeDefined()
-        expect(publicServiceInDb!.toObject()).toMatchObject(publicService!)
-    })
+        expect(publicServiceInDb!.toObject()).toMatchObject(params)
 
-    it('fails to create public service with unknown code', async () => {
-        const headers = testKit.session.getHeaders()
-        const session = testKit.session.getPartnerSession()
-        const code = PublicServiceCode.criminalRecordCertificate
-        const publicService = await publicServiceModel.findOne({ code }).lean()
-        const serviceWithUnknownCode = { ...publicService!, code: <PublicServiceCode>'unknown' }
-
-        // Act
-        await expect(action.handler({ headers, session, params: serviceWithUnknownCode })).rejects.toThrow(ApiError)
+        await publicServiceModel.deleteOne({ code })
     })
 
     it('fails to create public service if service already exists', async () => {
         const headers = testKit.session.getHeaders()
         const session = testKit.session.getPartnerSession()
-        const code = PublicServiceCode.criminalRecordCertificate
+        const code = `public-service-code-${randomUUID()}`
+
+        await publicServiceModel.create({
+            code,
+            categories: [`public-service-category-code-${randomUUID()}`],
+            name: 'public-service-name',
+            status: PublicServiceStatus.active,
+            sortOrder: 134,
+            segments: [],
+            sessionTypes: [SessionType.User],
+            locales: { en: 'en' },
+            contextMenu: [],
+        })
+
         const publicService = await publicServiceModel.findOne({ code }).lean()
 
         // Act
         await expect(action.handler({ headers, session, params: publicService! })).rejects.toThrow(BadRequestError)
+
+        await publicServiceModel.deleteOne({ code })
     })
 })

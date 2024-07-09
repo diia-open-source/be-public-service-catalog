@@ -1,18 +1,17 @@
 import TestKit, { mockInstance } from '@diia-inhouse/test'
-import { PublicServiceCode } from '@diia-inhouse/types'
 
-import GetPublicServiceContextMenuAction from '@actions/v1/getPublicServiceContextMenu'
+import GetPublicServiceContextMenuV2Action from '@actions/v2/getPublicServiceContextMenuV2'
 
 import PublicServiceService from '@services/public'
 
-describe('GetPublicServiceContextMenuAction', () => {
+describe('GetPublicServiceContextMenuV2Action', () => {
     const testKit = new TestKit()
     const publicServiceServiceMock = mockInstance(PublicServiceService)
-    const getPublicServiceContextMenuAction = new GetPublicServiceContextMenuAction(publicServiceServiceMock)
+    const action = new GetPublicServiceContextMenuV2Action(publicServiceServiceMock)
 
     describe('method `handler`', () => {
         it('should successfully get public service context menu', async () => {
-            const code = PublicServiceCode.criminalRecordCertificate
+            const code = 'public-service-code'
             const args = {
                 params: { code },
                 headers: testKit.session.getHeaders(),
@@ -21,7 +20,7 @@ describe('GetPublicServiceContextMenuAction', () => {
 
             jest.spyOn(publicServiceServiceMock, 'getPublicServiceContextMenu').mockResolvedValueOnce([])
 
-            expect(await getPublicServiceContextMenuAction.handler(args)).toEqual({ contextMenu: [] })
+            expect(await action.handler(args)).toEqual({ contextMenu: [] })
 
             expect(publicServiceServiceMock.getPublicServiceContextMenu).toHaveBeenCalledWith(code)
         })

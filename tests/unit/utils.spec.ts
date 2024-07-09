@@ -4,8 +4,6 @@ import { ArrayRule, StringRule } from '@diia-inhouse/validators'
 import Utils from '@src/utils'
 
 describe('Utils', () => {
-    const utils = new Utils()
-
     describe('method toObjectValidationRule', () => {
         it.each([
             [
@@ -52,7 +50,7 @@ describe('Utils', () => {
             ],
             [
                 ['User'],
-                utils.toObjectValidationRule(Object.values(PlatformType), { type: 'array', items: { type: 'string' }, optional: true }),
+                Utils.toObjectValidationRule(Object.values(PlatformType), { type: 'array', items: { type: 'string' }, optional: true }),
                 true,
                 {
                     type: 'object',
@@ -72,7 +70,7 @@ describe('Utils', () => {
                 },
             ],
         ])('props %s: rule: %s optional: %s expected: %s', (props, rule, optional, expected) => {
-            const result = utils.toObjectValidationRule(props, rule, optional)
+            const result = Utils.toObjectValidationRule(props, rule, optional)
 
             expect(result).toEqual(expected)
         })

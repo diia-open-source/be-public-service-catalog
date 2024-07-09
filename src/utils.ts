@@ -1,20 +1,23 @@
 import { ArrayRule, ObjectRule, StringRule } from '@diia-inhouse/validators'
 
-export default class Utils {
+export default {
     toObjectValidationRule(props: string[], rule: ObjectRule | ArrayRule | StringRule, optional = true): ObjectRule {
-        return props.reduce(
-            (acc: ObjectRule, prop: string): ObjectRule => ({
+        let acc: ObjectRule = {
+            type: 'object',
+            props: {},
+            optional,
+        }
+
+        for (const prop of props) {
+            acc = {
                 ...acc,
                 props: {
                     ...acc.props,
                     [prop]: rule,
                 },
-            }),
-            {
-                type: 'object',
-                props: {},
-                optional,
-            },
-        )
-    }
+            }
+        }
+
+        return acc
+    },
 }

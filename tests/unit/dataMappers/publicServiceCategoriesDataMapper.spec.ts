@@ -1,4 +1,4 @@
-import { PublicServiceCategoryCode, PublicServiceStatus } from '@diia-inhouse/types'
+import { PublicServiceStatus } from '@diia-inhouse/types'
 
 import { PublicServiceCategoryStatus } from '@src/generated'
 
@@ -41,7 +41,7 @@ describe('publicServiceCategoriesDataMapper', () => {
                 <PublicServiceCategoryModel[]>[
                     {
                         ...publicServiceCategories[0],
-                        category: <PublicServiceCategoryCode>'fake-category',
+                        category: 'fake-category',
                     },
                 ],
                 [publicService],

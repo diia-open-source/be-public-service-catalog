@@ -1,23 +1,23 @@
 import { GrpcAppAction } from '@diia-inhouse/diia-app'
 
-import { ActionVersion, PublicServiceCode, SessionType } from '@diia-inhouse/types'
+import { ActionVersion, SessionType } from '@diia-inhouse/types'
 import { ValidationSchema } from '@diia-inhouse/validators'
 
 import PublicService from '@services/public'
 
-import { ActionResult, CustomActionArguments } from '@interfaces/actions/v1/getPublicServiceContextMenu'
+import { ActionResult, CustomActionArguments } from '@interfaces/actions/v2/getPublicServiceContextMenuV2'
 
-export default class GetPublicServiceContextMenuAction implements GrpcAppAction {
+export default class GetPublicServiceContextMenuV2Action implements GrpcAppAction {
     constructor(private readonly publicService: PublicService) {}
 
     readonly sessionType: SessionType = SessionType.None
 
-    readonly actionVersion: ActionVersion = ActionVersion.V1
+    readonly actionVersion: ActionVersion = ActionVersion.V2
 
-    readonly name: string = 'getPublicServiceContextMenu'
+    readonly name: string = 'getPublicServiceContextMenuV2'
 
     readonly validationRules: ValidationSchema<CustomActionArguments['params']> = {
-        code: { type: 'string', enum: Object.values(PublicServiceCode) },
+        code: { type: 'string' },
     }
 
     async handler(args: CustomActionArguments): Promise<ActionResult> {

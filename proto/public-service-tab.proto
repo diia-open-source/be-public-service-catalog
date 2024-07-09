@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "public-service-tab-code.proto";
+
+package ua.gov.diia.publicservicecatalog;
+option java_multiple_files = true;
+option java_package = "ua.gov.diia.publicservicecatalog";
+
+message PublicServiceTab {
+    string name = 1;
+    ua.gov.diia.publicservicecatalog.PublicServiceTabCode code = 2;
+}

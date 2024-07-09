@@ -16,7 +16,6 @@ import { MongoDBErrorCode } from '@diia-inhouse/db'
 import { ApiError, BadRequestError, ModelNotFoundError } from '@diia-inhouse/errors'
 import TestKit, { mockInstance } from '@diia-inhouse/test'
 import MongooseMock from '@diia-inhouse/test/mongooseMock'
-import { PublicServiceCategoryCode } from '@diia-inhouse/types'
 
 import PublicService from '@services/public'
 import PublicServiceCategoriesService from '@services/publicCategories'
@@ -105,7 +104,7 @@ describe('service: PublicCategories', () => {
 
     describe('method: getPublicServiceCategoryByCategory', () => {
         it('should successfully get public service category by category', async () => {
-            const category = PublicServiceCategoryCode.certificates
+            const category = 'certificates'
             const publicServiceCategory = new publicServiceCategoryModel(publicServiceCategories[0])
             const mappedPublicService = {
                 ...publicServiceCategories[0],
@@ -122,7 +121,7 @@ describe('service: PublicCategories', () => {
         })
 
         it('should fail with error in case public service category not found', async () => {
-            const category = PublicServiceCategoryCode.certificates
+            const category = 'certificates'
 
             jest.spyOn(publicServiceCategoryModel, 'findOne').mockResolvedValueOnce(null)
 

@@ -1,8 +1,6 @@
-import { FilterQuery } from 'mongoose'
-
-import { MongoDBErrorCode } from '@diia-inhouse/db'
+import { FilterQuery, MongoDBErrorCode } from '@diia-inhouse/db'
 import { BadRequestError, ModelNotFoundError } from '@diia-inhouse/errors'
-import { ActHeaders, AppUser, PublicServiceCategoryCode, UserFeatures } from '@diia-inhouse/types'
+import { ActHeaders, AppUser, UserFeatures } from '@diia-inhouse/types'
 import { utils } from '@diia-inhouse/utils'
 
 import {
@@ -31,9 +29,9 @@ export default class PublicServiceCategoriesService {
             const newCategory: PublicServiceCategory = await publicServiceCategoryModel.create(publicServiceCategory)
 
             return newCategory
-        } catch (e) {
-            return utils.handleError(e, (err) => {
-                if (err.getCode() === MongoDBErrorCode.DuplicateKey) {
+        } catch (err) {
+            return utils.handleError(err, (handledError) => {
+                if (handledError.getCode() === MongoDBErrorCode.DuplicateKey) {
                     throw new BadRequestError(`Category ${publicServiceCategory.category} already exists`)
                 }
 
@@ -68,7 +66,7 @@ export default class PublicServiceCategoriesService {
         }
     }
 
-    async getPublicServiceCategoryByCategory(category: PublicServiceCategoryCode): Promise<PublicServiceCategoryResult> {
+    async getPublicServiceCategoryByCategory(category: string): Promise<PublicServiceCategoryResult> {
         const query: FilterQuery<PublicServiceCategory> = { category }
         const publicServiceCategory = await publicServiceCategoryModel.findOne(query)
         if (!publicServiceCategory) {

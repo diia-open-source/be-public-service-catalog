@@ -1,6 +1,6 @@
 import { head } from 'lodash'
 
-import { PublicServiceCategoryCode, PublicServiceStatus, PublicServiceTabCode } from '@diia-inhouse/types'
+import { PublicServiceStatus } from '@diia-inhouse/types'
 
 import {
     GetPublicServicesResponse,
@@ -10,6 +10,7 @@ import {
     PublicServiceCategoryResult,
     PublicServiceCategoryStatus,
     PublicServiceResponse,
+    PublicServiceTabCode,
 } from '@src/generated'
 
 import { PublicServiceCategoryModel } from '@interfaces/models/publicServiceCategory'
@@ -25,18 +26,18 @@ export default class PublicServiceCategoriesDataMapper {
     }
 
     toCategories(publicServiceCategories: PublicServiceCategory[], publicServices: PublicService[]): GetPublicServicesResponse {
-        const publicServicesByCategoryCode: Map<PublicServiceCategoryCode, PublicServiceResponse[]> = new Map()
-        const categoryStatusByCategoryCode: Map<PublicServiceCategoryCode, PublicServiceCategoryStatus> = new Map()
+        const publicServicesByCategoryCode: Map<string, PublicServiceResponse[]> = new Map()
+        const categoryStatusByCategoryCode: Map<string, PublicServiceCategoryStatus> = new Map()
         const categoriesResponse: PublicServiceCategoryResponse[] = []
         const tabs = new Set<PublicServiceTabCode>()
 
-        publicServices.forEach((publicService: PublicService) => {
+        for (const publicService of publicServices) {
             const { categories, code, name, status, contextMenu, sortOrder } = publicService
             if (status === PublicServiceStatus.inactive) {
-                return
+                continue
             }
 
-            categories.forEach((category: PublicServiceCategoryCode) => {
+            for (const category of categories) {
                 const items: PublicServiceResponse[] = publicServicesByCategoryCode.get(category) || []
                 const categoryStatus = categoryStatusByCategoryCode.get(category)
 
@@ -57,20 +58,20 @@ export default class PublicServiceCategoriesDataMapper {
                     contextMenu,
                 })
                 publicServicesByCategoryCode.set(category, items)
-            })
-        })
+            }
+        }
 
-        publicServiceCategories.forEach(({ category, icon, name, status, sortOrder, tabCodes = [] }) => {
+        for (const { category, icon, name, status, sortOrder, tabCodes = [] } of publicServiceCategories) {
             const publicServicesByCategory = publicServicesByCategoryCode.get(category)
             if (!publicServicesByCategory) {
-                return
+                continue
             }
 
             const calculatedStatus =
                 status === PublicServiceCategoryStatus.inactive ? status : categoryStatusByCategoryCode.get(category) || status
 
             if (calculatedStatus === PublicServiceCategoryStatus.inactive) {
-                return
+                continue
             }
 
             const tabCode = head(tabCodes)!
@@ -90,7 +91,7 @@ export default class PublicServiceCategoriesDataMapper {
                 tabCode,
                 tabCodes,
             })
-        })
+        }
 
         return {
             publicServicesCategories: categoriesResponse,

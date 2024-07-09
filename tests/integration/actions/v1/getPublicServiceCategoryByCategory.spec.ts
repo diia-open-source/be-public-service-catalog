@@ -1,22 +1,21 @@
 import { ModelNotFoundError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
-import { PublicServiceCategoryCode } from '@diia-inhouse/types'
 
-import GetPublicServiceCategoryByCategory from '@actions/v1/getPublicServiceCategoryByCategory'
+import GetPublicServiceCategoryByCategoryAction from '@actions/v1/getPublicServiceCategoryByCategory'
 
 import { getApp } from '@tests/utils/getApp'
 
 import { ActionResult } from '@interfaces/actions/v1/getPublicServiceCategoryByCategory'
 
-describe(`Action ${GetPublicServiceCategoryByCategory.name}`, () => {
+describe(`Action ${GetPublicServiceCategoryByCategoryAction.name}`, () => {
     let app: Awaited<ReturnType<typeof getApp>>
     const testKit = new TestKit()
-    let getPublicServiceCategoryByCategory: GetPublicServiceCategoryByCategory
+    let getPublicServiceCategoryByCategory: GetPublicServiceCategoryByCategoryAction
 
     beforeAll(async () => {
         app = await getApp()
 
-        getPublicServiceCategoryByCategory = app.container.build(GetPublicServiceCategoryByCategory)
+        getPublicServiceCategoryByCategory = app.container.build(GetPublicServiceCategoryByCategoryAction)
 
         await app.start()
     })
@@ -27,7 +26,7 @@ describe(`Action ${GetPublicServiceCategoryByCategory.name}`, () => {
 
     const headers = testKit.session.getHeaders()
     const session = testKit.session.getPartnerSession()
-    const category = PublicServiceCategoryCode.certificates
+    const category = 'carServices'
 
     it('get public service category by category', async () => {
         // Act
@@ -47,7 +46,7 @@ describe(`Action ${GetPublicServiceCategoryByCategory.name}`, () => {
             getPublicServiceCategoryByCategory.handler({
                 headers,
                 session,
-                params: { category: <PublicServiceCategoryCode>(<unknown>'fake') },
+                params: { category: 'fake' },
             }),
         ).rejects.toThrow(ModelNotFoundError)
     })

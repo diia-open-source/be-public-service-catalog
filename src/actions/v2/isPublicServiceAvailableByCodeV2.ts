@@ -1,23 +1,23 @@
 import { GrpcAppAction } from '@diia-inhouse/diia-app'
 
-import { ActionVersion, DiiaOfficeStatus, ProfileFeature, PublicServiceCode, SessionType } from '@diia-inhouse/types'
+import { ActionVersion, DiiaOfficeStatus, ProfileFeature, SessionType } from '@diia-inhouse/types'
 import { ValidationSchema } from '@diia-inhouse/validators'
 
 import PublicService from '@services/public'
 
-import { ActionResult, CustomActionArguments } from '@interfaces/actions/v1/isPublicServiceAvailableByCode'
+import { ActionResult, CustomActionArguments } from '@interfaces/actions/v2/isPublicServiceAvailableByCodeV2'
 
-export default class IsPublicServiceAvailableByCodeAction implements GrpcAppAction {
+export default class IsPublicServiceAvailableByCodeV2Action implements GrpcAppAction {
     constructor(private readonly publicService: PublicService) {}
 
     readonly sessionType: SessionType = SessionType.None
 
-    readonly actionVersion: ActionVersion = ActionVersion.V1
+    readonly actionVersion: ActionVersion = ActionVersion.V2
 
-    readonly name: string = 'isPublicServiceAvailableByCode'
+    readonly name: string = 'isPublicServiceAvailableByCodeV2'
 
     readonly validationRules: ValidationSchema = {
-        code: { type: 'string', enum: Object.values(PublicServiceCode) },
+        code: { type: 'string' },
         sessionType: { type: 'string', enum: Object.values(SessionType) },
         features: {
             type: 'object',

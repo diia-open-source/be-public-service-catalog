@@ -1,12 +1,9 @@
-import { Model, Schema, SchemaDefinition, model, models } from 'mongoose'
-
+import { Model, Schema, SchemaDefinition, model, models } from '@diia-inhouse/db'
 import {
     AppVersions,
     PlatformType,
     ProfileFeature,
     PublicServiceAppVersionsBySession,
-    PublicServiceCategoryCode,
-    PublicServiceCode,
     PublicServiceContextMenu,
     PublicServiceContextMenuType,
     PublicServiceStatus,
@@ -15,23 +12,25 @@ import {
 
 import { PublicService } from '@src/generated'
 
-export const availableMinVersionsSchemaDefinition = Object.values(PlatformType).reduce(
-    (acc: SchemaDefinition<AppVersions['minVersion']>, platformType) => {
+export const availableMinVersionsSchemaDefinition = ((): SchemaDefinition<AppVersions['minVersion']> => {
+    const acc: SchemaDefinition<AppVersions['minVersion']> = {}
+
+    for (const platformType of Object.values(PlatformType)) {
         acc[platformType] = { type: String }
+    }
 
-        return acc
-    },
-    {},
-)
+    return acc
+})()
 
-export const availableVersionsSchemaDefinition = Object.values(PlatformType).reduce(
-    (acc: SchemaDefinition<AppVersions['versions']>, platformType) => {
+export const availableVersionsSchemaDefinition = ((): SchemaDefinition<AppVersions['versions']> => {
+    const acc: SchemaDefinition<AppVersions['versions']> = {}
+
+    for (const platformType of Object.values(PlatformType)) {
         acc[platformType] = { type: [String], default: undefined }
+    }
 
-        return acc
-    },
-    {},
-)
+    return acc
+})()
 
 const appVersionsSchema = new Schema<AppVersions>(
     {
@@ -41,14 +40,15 @@ const appVersionsSchema = new Schema<AppVersions>(
     { _id: false },
 )
 
-const appVersionsSchemaDefinition = Object.values(SessionType).reduce(
-    (acc: SchemaDefinition<PublicServiceAppVersionsBySession>, session) => {
-        acc[session] = appVersionsSchema
+const appVersionsSchemaDefinition = ((): SchemaDefinition<PublicServiceAppVersionsBySession> => {
+    const acc: SchemaDefinition<PublicServiceAppVersionsBySession> = {}
 
-        return acc
-    },
-    {},
-)
+    for (const session of Object.values(SessionType)) {
+        acc[session] = appVersionsSchema
+    }
+
+    return acc
+})()
 
 const appVersionsBySessionSchema = new Schema<PublicServiceAppVersionsBySession>(appVersionsSchemaDefinition, { _id: false })
 
@@ -64,8 +64,6 @@ const publicServiceContextMenuSchema = new Schema<PublicServiceContextMenu>(
     },
 )
 
-const localesSchema = new Schema<Record<string, string>>({}, { _id: false })
-
 const platformMinVersionSchema = new Schema<PublicService['platformMinVersion']>(
     {
         [PlatformType.iOS]: { type: String },
@@ -77,15 +75,15 @@ const platformMinVersionSchema = new Schema<PublicService['platformMinVersion']>
 
 export const publicServiceSchema = new Schema<PublicService>(
     {
-        categories: { type: [String], enum: Object.values(PublicServiceCategoryCode), required: true },
-        code: { type: String, enum: Object.values(PublicServiceCode), unique: true, required: true },
+        categories: { type: [String], required: true },
+        code: { type: String, unique: true, required: true },
         name: { type: String, required: true },
         status: { type: String, enum: Object.values(PublicServiceStatus), required: true },
         sortOrder: { type: Number, required: true },
         contextMenu: { type: [publicServiceContextMenuSchema], default: undefined },
         segments: { type: [String] },
         sessionTypes: { type: [String], enum: Object.values(SessionType), required: true },
-        locales: { type: localesSchema, required: false },
+        locales: { type: Object, required: false },
         appVersions: { type: appVersionsBySessionSchema },
         platformMinVersion: { type: platformMinVersionSchema },
         profileFeature: { type: String, enum: Object.values(ProfileFeature) },
@@ -94,7 +92,5 @@ export const publicServiceSchema = new Schema<PublicService>(
         timestamps: true,
     },
 )
-
-export const skipSyncIndexes = true
 
 export default <Model<PublicService>>models.PublicService || model('PublicService', publicServiceSchema)

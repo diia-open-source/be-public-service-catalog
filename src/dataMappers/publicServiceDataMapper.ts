@@ -1,5 +1,4 @@
-import { FlattenMaps, Types } from 'mongoose'
-
+import { FlattenMaps, Types } from '@diia-inhouse/db'
 import { PublicServiceSettings } from '@diia-inhouse/types'
 
 import { PublicService } from '@src/generated'
